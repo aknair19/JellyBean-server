@@ -5,6 +5,7 @@ import {
   getAllBlogs,
   getBlogById,
   updateBlog,
+  userByBlogId
 } from "../controller/blog.controller.js";
 
 //router object
@@ -18,5 +19,8 @@ router.post("/create-blog", createBlog);
 router.put("/update-blog/:id", updateBlog);
 
 router.delete("/delete-blog/:id", deleteBlog);
+
+//get blog by userid
+router.get("/user-blog/:id", userByBlogId);
 
 export default router;

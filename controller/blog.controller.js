@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import blogModel from "../modals/blog.model.js";
+import userModel from "../modals/user.modal.js";
 
 export const getAllBlogs = async (req, res) => {
   try {
@@ -48,13 +50,26 @@ export const getBlogById = async (req, res) => {
 };
 export const createBlog = async (req, res) => {
   try {
-    const { title, description, image } = req.body;
-    if (!title || !description || !image) {
+    const { title, description, image, user } = req.body;
+    if (!title || !description || !image || !user) {
       return res
         .status(200)
         .json({ success: false, message: "fill all required fields" });
     }
-    const newBlog = new blogModel({ title, description, image });
+    const existingUser = await userModel.findById(user);
+    if (!existingUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "unable to find user" });
+    }
+
+    const newBlog = new blogModel({ title, description, image, user });
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    await newBlog.save({ session });
+    existingUser.blogs.push(newBlog);
+    await existingUser.save({ session });
+    await session.commitTransaction();
     await newBlog.save();
     return res
       .status(200)
@@ -91,14 +106,43 @@ export const updateBlog = async (req, res) => {
 };
 export const deleteBlog = async (req, res) => {
   try {
-    const { id } = req.params;
-    await blogModel.findByIdAndDelete(id);
+    const blog = await blogModel
+      .findOneAndDelete(req.params.id)
+      .populate("user");
+
+    await blog.user.blogs.pull(blog);
+    await blog.user.save();
     return res.status(200).json({ success: true, message: "Blog deleted" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
       message: "error while deleting  blog",
+      error,
+    });
+  }
+};
+
+export const userByBlogId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userBlog = await userModel.findById(id).populate("blogs");
+    if (!userBlog) {
+      return res.status(404).json({
+        success: false,
+        message: "blogs not found with this id",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "blogs found",
+      userBlog,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "error in user  blog",
       error,
     });
   }
