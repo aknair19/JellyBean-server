@@ -2,6 +2,7 @@ import express from "express";
 import Connection from "./database/db.js";
 import dotenv from "dotenv";
 import UserRouter from "./routes/userRoute.js";
+import BlogRouter from "./routes/blogRoute.js";
 import cors from "cors";
 import bodyParser from "body-parser";
 dotenv.config();
@@ -18,7 +19,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //routes
 app.use("/api/v1/user", UserRouter);
-
+app.use("/api/v1/blog", BlogRouter);
 //listen
 app.listen(PORT, () => {
   console.log("listening to PORT ", PORT);
