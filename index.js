@@ -1,13 +1,25 @@
 import express from "express";
 import Connection from "./database/db.js";
 import dotenv from "dotenv";
-import Router from "./routes/route.js";
-const PORT = 8000;
+import UserRouter from "./routes/userRoute.js";
+import cors from "cors";
+import bodyParser from "body-parser";
 dotenv.config();
+const PORT = process.env.PORT || 8000;
+
+//rest object
 const app = express();
 
-app.use("/", Router);
+//middlewares
+app.use(cors());
+app.use(express.json());
+app.use(bodyParser.json({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
+//routes
+app.use("/api/v1/user", UserRouter);
+
+//listen
 app.listen(PORT, () => {
   console.log("listening to PORT ", PORT);
 });
