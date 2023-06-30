@@ -4,7 +4,7 @@ import userModel from "../modals/user.modal.js";
 
 export const getAllBlogs = async (req, res) => {
   try {
-    const blogs = await blogModel.find({});
+    const blogs = await blogModel.find({}).populate('user')
     if (!blogs) {
       return res.status(200).json({
         success: false,
